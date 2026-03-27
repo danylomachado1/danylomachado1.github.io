@@ -1,0 +1,30 @@
+name: Validate JSON
+
+on:
+  push:
+    paths:
+      - '**/*.json'
+  pull_request:
+    paths:
+      - '**/*.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate all JSON files
+        run: |
+          echo "Checking JSON syntax..."
+          failed=0
+          while IFS= read -r f; do
+            if python3 -m json.tool "$f" > /dev/null 2>&1; then
+              echo "  ✓  $f"
+            else
+              echo "  ✗  $f  — INVALID JSON"
+              python3 -m json.tool "$f" || true
+              failed=1
+            fi
+          done < <(find . -name '*.json' -not -path './.git/*')
+          exit $failed

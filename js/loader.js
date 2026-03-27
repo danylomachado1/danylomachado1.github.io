@@ -1,20 +1,22 @@
 /**
  * loader.js — Data-driven page renderer
  *
- * Reads from:
- *   _data/profile.json       → profile card (also reads orcid field for social link)
+ * Data sources:
+ *   _data/profile.json       → profile card, JSON-LD
  *   _data/education.json     → education list
- *   _data/awards.json        → honors & awards list
- *   _research/index.json     → list of _research/*.md files
- *   _news/index.json         → list of _news/*.md files
- *   _publications/index.json → list of _publications/*.md files (manual)
- *   ORCID public API         → publications fetched automatically from orcid field
+ *   _data/awards.json        → honors & awards
+ *   _data/teaching.json      → teaching & experience
+ *   _research/index.json     → _research/*.md
+ *   _news/index.json         → _news/*.md
+ *   _talks/index.json        → _talks/*.md
+ *   _publications/index.json → _publications/*.md  (manual, highest priority)
+ *   ORCID public API         → works by orcid field in profile.json
+ *   arXiv API                → works by arxiv_author_query field in profile.json
  *
- * Publications = ORCID works (auto) + _publications/*.md (manual, takes priority).
- * Manual entries override ORCID ones with the same DOI.
+ * Priority for deduplication: manual > ORCID > arXiv (matched by DOI/arXiv ID)
  */
 
-// ── Helpers ────────────────────────────────────────────────────
+// ── Utilities ─────────────────────────────────────────────────
 
 function esc(str) {
   return String(str ?? '')
@@ -22,12 +24,11 @@ function esc(str) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// Minimal markdown → HTML (bold, italic, code, links, paragraphs)
+// Minimal markdown → HTML
 function md(text) {
   if (!text) return '';
-  const escaped = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return escaped
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/`(.+?)`/g, '<code>$1</code>')
@@ -49,30 +50,22 @@ function parseMd(text) {
   while (i < lines.length) {
     const kv = lines[i].match(/^([a-zA-Z_][a-zA-Z0-9_-]*):\s*(.*)/);
     if (!kv) { i++; continue; }
-
-    const key = kv[1];
-    const raw = kv[2].trim();
+    const key = kv[1], raw = kv[2].trim();
 
     if (raw === '') {
       const items = [];
       i++;
-      while (i < lines.length && /^\s*-\s/.test(lines[i])) {
-        items.push(scalar(lines[i].replace(/^\s*-\s*/, '').trim()));
-        i++;
-      }
+      while (i < lines.length && /^\s*-\s/.test(lines[i]))
+        items.push(scalar(lines[i].replace(/^\s*-\s*/, '').trim())), i++;
       fm[key] = items.length ? items : null;
       continue;
     }
-
     if (raw[0] === '[' && raw[raw.length - 1] === ']') {
       fm[key] = raw.slice(1, -1).split(',').map(s => scalar(s.trim())).filter(v => v != null);
       i++; continue;
     }
-
-    fm[key] = scalar(raw);
-    i++;
+    fm[key] = scalar(raw); i++;
   }
-
   return { fm, body };
 }
 
@@ -113,40 +106,51 @@ async function loadCollection(folder) {
   return items;
 }
 
-// ── Profile ────────────────────────────────────────────────────
+// Group items by year, return sorted array of { year, items }
+function groupByYear(items, yearKey = 'year') {
+  const map = {};
+  for (const item of items) {
+    const y = String(item[yearKey] || 'Other');
+    (map[y] = map[y] || []).push(item);
+  }
+  return Object.keys(map)
+    .sort((a, b) => b - a)
+    .map(year => ({ year, items: map[year] }));
+}
 
-// Cache the profile data so publications can reuse it without a second fetch
-let _profileData = null;
+// ── Profile (cached for publications) ─────────────────────────
+
+let _profile = null;
 
 async function loadProfile() {
-  try { _profileData = await getJson('_data/profile.json'); }
-  catch (e) { console.warn('loader: profile.json not loaded:', e.message); return; }
+  try { _profile = await getJson('_data/profile.json'); }
+  catch (e) { console.warn('loader: profile.json failed:', e.message); return; }
 
-  const data = _profileData;
   const textEl  = document.getElementById('profile-text');
   const photoEl = document.getElementById('profile-photo');
 
   if (textEl) {
-    const bioHtml    = (data.bio || []).map(p => `<p>${p}</p>`).join('');
-    const socialHtml = buildSocial(data.social || {}, data.orcid, data.resume);
-    const dotStyle   = `background:${esc(data.affiliation_color || '#555')};`;
+    const bioHtml    = (_profile.bio || []).map(p => `<p>${p}</p>`).join('');
+    const socialHtml = buildSocial(_profile.social || {}, _profile.orcid, _profile.resume);
 
     textEl.innerHTML = `
-      <h1>${esc(data.name)}</h1>
-      <p class="profile-title">${esc(data.title)}</p>
+      <h1>${esc(_profile.name)}</h1>
+      <p class="profile-title">${esc(_profile.title)}</p>
       <p class="profile-affil">
-        <span class="affil-dot" style="${dotStyle}"></span>
-        ${esc(data.affiliation)}
+        <span class="affil-dot" style="background:${esc(_profile.affiliation_color || '#555')};"></span>
+        ${esc(_profile.affiliation)}
       </p>
       ${bioHtml}
       <div class="social-links">${socialHtml}</div>
     `;
   }
 
-  if (photoEl && data.photo) {
-    photoEl.src = data.photo;
-    photoEl.alt = data.name || 'Profile photo';
+  if (photoEl && _profile.photo) {
+    photoEl.src = _profile.photo;
+    photoEl.alt = _profile.name || 'Profile photo';
   }
+
+  injectJsonLd(_profile);
 }
 
 function buildSocial(s, orcid, resume) {
@@ -160,6 +164,41 @@ function buildSocial(s, orcid, resume) {
   if (s.twitter)      links.push(`<a href="${esc(s.twitter)}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> Twitter / X</a>`);
   if (resume)         links.push(`<a href="${esc(resume)}"><i class="fa fa-file-pdf"></i> Resume</a>`);
   return links.join('\n');
+}
+
+// ── JSON-LD structured data ────────────────────────────────────
+
+function injectJsonLd(data) {
+  const sameAs = [
+    data.orcid && `https://orcid.org/${data.orcid}`,
+    data.social?.linkedin,
+    data.social?.github,
+    data.social?.researchgate,
+    data.social?.scholar,
+  ].filter(Boolean);
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: data.name,
+    jobTitle: data.title,
+    affiliation: { '@type': 'Organization', name: data.affiliation },
+    url: 'https://danylomachado1.github.io/',
+    email: data.social?.email,
+    image: data.photo ? `https://danylomachado1.github.io/${data.photo}` : undefined,
+    identifier: data.orcid ? `https://orcid.org/${data.orcid}` : undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
+  };
+
+  // Remove undefined fields
+  Object.keys(schema).forEach(k => schema[k] === undefined && delete schema[k]);
+
+  const el = document.getElementById('json-ld-person') || (() => {
+    const s = document.createElement('script');
+    s.type = 'application/ld+json'; s.id = 'json-ld-person';
+    document.head.appendChild(s); return s;
+  })();
+  el.textContent = JSON.stringify(schema, null, 2);
 }
 
 // ── Education + Awards ─────────────────────────────────────────
@@ -195,6 +234,32 @@ async function loadEducationAwards() {
   }
 }
 
+// ── Teaching & Experience ──────────────────────────────────────
+
+async function loadTeaching() {
+  const section = document.getElementById('teaching-section');
+  const el = document.getElementById('teaching-list');
+  if (!el) return;
+
+  let items;
+  try { items = await getJson('_data/teaching.json'); }
+  catch { return; }
+
+  if (!items.length) return;
+  if (section) section.hidden = false;
+
+  el.innerHTML = items.map(t => `
+    <div class="teaching-item">
+      <div class="news-content">
+        <span class="teaching-role">${esc(t.role)}</span>
+        <span class="teaching-course">${esc(t.course)}</span>
+        <span class="news-meta">${esc(t.institution)}</span>
+      </div>
+      <div class="teaching-date">${esc(t.start)}${t.end && t.end !== t.start ? ' – ' + esc(t.end) : ''}</div>
+    </div>
+  `).join('');
+}
+
 // ── Research ───────────────────────────────────────────────────
 
 async function loadResearch() {
@@ -205,31 +270,18 @@ async function loadResearch() {
   try { items = await loadCollection('_research'); }
   catch (e) { console.warn('loader: research error:', e.message); return; }
 
-  if (!items.length) {
-    el.innerHTML = '<p class="muted">No research items yet.</p>';
-    return;
-  }
+  if (!items.length) { el.innerHTML = '<p class="muted">No research items yet.</p>'; return; }
 
-  const byYear = {};
-  for (const item of items) {
-    const y = String(item.year || 'Other');
-    (byYear[y] = byYear[y] || []).push(item);
-  }
-  const years = Object.keys(byYear).sort((a, b) => b - a);
-
-  el.innerHTML = years.map(year => `
+  el.innerHTML = groupByYear(items).map(({ year, items: group }) => `
     <div class="news-group">
       <div class="news-year">${esc(year)}</div>
       <div class="news-items">
-        ${byYear[year].map(item => `
+        ${group.map(item => `
           <div class="news-item">
             <div class="news-content">
               <strong>${esc(item.title || '')}</strong>
               ${item.body ? ` — ${md(item.body)}` : ''}
-              <span class="news-meta">
-                Advisor: ${esc(item.advisor || '')} &middot;
-                ${esc(item.institution || '')}${item.location ? ', ' + esc(item.location) : ''}
-              </span>
+              <span class="news-meta">Advisor: ${esc(item.advisor || '')} &middot; ${esc(item.institution || '')}${item.location ? ', ' + esc(item.location) : ''}</span>
             </div>
             <div class="news-date">${esc(item.period || '')}</div>
           </div>
@@ -253,18 +305,11 @@ async function loadNews() {
   if (!items.length) { if (section) section.hidden = true; return; }
   if (section) section.hidden = false;
 
-  const byYear = {};
-  for (const item of items) {
-    const y = String(item.year || new Date(item.date || '').getFullYear() || 'Other');
-    (byYear[y] = byYear[y] || []).push(item);
-  }
-  const years = Object.keys(byYear).sort((a, b) => b - a);
-
-  el.innerHTML = years.map(year => `
+  el.innerHTML = groupByYear(items).map(({ year, items: group }) => `
     <div class="news-group">
       <div class="news-year">${esc(year)}</div>
       <div class="news-items">
-        ${byYear[year].map(item => `
+        ${group.map(item => `
           <div class="news-item">
             <div class="news-content"><p>${md(item.body)}</p></div>
             <div class="news-date">${esc(item.display_date || item.date || '')}</div>
@@ -275,43 +320,102 @@ async function loadNews() {
   `).join('');
 }
 
-// ── Publications: ORCID fetch ──────────────────────────────────
+// ── Talks ──────────────────────────────────────────────────────
+
+async function loadTalks() {
+  const section = document.getElementById('talks-section');
+  const el      = document.getElementById('talks-list');
+  if (!el) return;
+
+  let items;
+  try { items = await loadCollection('_talks'); }
+  catch { if (section) section.hidden = true; return; }
+
+  if (!items.length) { if (section) section.hidden = true; return; }
+  if (section) section.hidden = false;
+
+  el.innerHTML = groupByYear(items).map(({ year, items: group }) => `
+    <div class="news-group">
+      <div class="news-year">${esc(year)}</div>
+      <div class="news-items">
+        ${group.map(item => {
+          const typeClass = item.type === 'poster' ? 'talk-type-poster' : 'talk-type-presentation';
+          const typeLabel = item.type || 'talk';
+          const links = [
+            item.slides && `<a href="${esc(item.slides)}" target="_blank" rel="noopener">[Slides]</a>`,
+            item.video  && `<a href="${esc(item.video)}"  target="_blank" rel="noopener">[Video]</a>`,
+            item.poster && `<a href="${esc(item.poster)}" target="_blank" rel="noopener">[Poster]</a>`,
+          ].filter(Boolean).join(' ');
+
+          return `
+            <div class="news-item">
+              <div class="news-content">
+                <strong>${esc(item.title || '')}</strong>
+                <span class="talk-type ${typeClass}">${esc(typeLabel)}</span>
+                <span class="news-meta">${esc(item.venue || '')}${item.location ? ' &middot; ' + esc(item.location) : ''}</span>
+                ${links ? `<span class="news-meta" style="font-style:normal;">${links}</span>` : ''}
+              </div>
+              <div class="news-date">${esc(item.display_date || item.date || '')}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Publications: ORCID ────────────────────────────────────────
 
 async function fetchOrcidWorks(orcid) {
-  const url = `https://pub.orcid.org/v3.0/${orcid}/works`;
-  const data = await getJson(url, { headers: { Accept: 'application/json' } });
-  const groups = data.group || [];
-
-  return groups.map(group => {
-    // ORCID can have multiple versions of the same work; take the first summary
+  const data = await getJson(
+    `https://pub.orcid.org/v3.0/${orcid}/works`,
+    { headers: { Accept: 'application/json' } }
+  );
+  return (data.group || []).map(group => {
     const s = group['work-summary']?.[0];
     if (!s) return null;
-
-    const title  = s.title?.title?.value || '';
-    const year   = Number(s['publication-date']?.year?.value) || null;
-    const venue  = s['journal-title']?.value || '';
-    const type   = s.type || '';
-
-    // Extract DOI from external IDs
     const extIds = s['external-ids']?.['external-id'] || [];
     const doi    = extIds.find(e => e['external-id-type'] === 'doi')?.['external-id-value'] || '';
-    const url_   = s.url?.value || '';
-
     return {
-      title,
-      year,
-      venue,
-      type,
+      title:  s.title?.title?.value || '',
+      year:   Number(s['publication-date']?.year?.value) || null,
+      venue:  s['journal-title']?.value || '',
       doi,
-      pdf: doi ? `https://doi.org/${doi}` : (url_ || ''),
+      pdf:    doi ? `https://doi.org/${doi}` : (s.url?.value || ''),
       _source: 'orcid',
     };
   }).filter(Boolean);
 }
 
+// ── Publications: arXiv ────────────────────────────────────────
+
+async function fetchArxivWorks(authorQuery) {
+  const url = `https://export.arxiv.org/api/query?search_query=au:${authorQuery}&max_results=20&sortBy=submittedDate&sortOrder=descending`;
+  const xml  = await getText(url);
+  const doc  = new DOMParser().parseFromString(xml, 'application/xml');
+
+  return Array.from(doc.querySelectorAll('entry')).map(e => {
+    const title    = e.querySelector('title')?.textContent?.trim() ?? '';
+    const year     = Number((e.querySelector('published')?.textContent ?? '').slice(0, 4)) || null;
+    const authors  = Array.from(e.querySelectorAll('author name')).map(n => n.textContent.trim()).join(', ');
+    const arxivUrl = Array.from(e.querySelectorAll('link'))
+                       .find(l => l.getAttribute('rel') === 'alternate')?.getAttribute('href') ?? '';
+    const doi      = (e.querySelector('arxiv\\:doi, doi')?.textContent ?? '').trim();
+    const arxivId  = arxivUrl.split('/abs/').pop() ?? '';
+    const summary  = e.querySelector('summary')?.textContent?.trim() ?? '';
+
+    return { title, year, authors, venue: 'arXiv preprint', doi, pdf: arxivUrl, body: summary, _source: 'arxiv', _arxivId: arxivId };
+  }).filter(e => e.title);
+}
+
 // ── Publications: render ───────────────────────────────────────
 
 function renderPubCard(item) {
+  const sourceTag = {
+    orcid: `<span class="pub-source-tag"><i class="fa-brands fa-orcid"></i> ORCID</span>`,
+    arxiv: `<span class="pub-source-tag pub-source-arxiv"><i class="fa-solid fa-atom"></i> arXiv</span>`,
+  }[item._source] ?? '';
+
   const links = [
     item.pdf    && `<a href="${esc(item.pdf)}"    target="_blank" rel="noopener">[PDF]</a>`,
     item.code   && `<a href="${esc(item.code)}"   target="_blank" rel="noopener">[Code]</a>`,
@@ -319,9 +423,9 @@ function renderPubCard(item) {
     item.doi    && `<a href="https://doi.org/${esc(item.doi)}" target="_blank" rel="noopener">[DOI]</a>`,
   ].filter(Boolean).join(' ');
 
-  const sourceTag = item._source === 'orcid'
-    ? `<span class="pub-source-tag"><i class="fa-brands fa-orcid"></i> ORCID</span>`
-    : '';
+  const venueHtml = item.venue
+    ? `<p class="pub-venue"><em>${esc(item.venue)}</em>${item.year ? ' ' + item.year : ''} ${item.featured ? '<span class="pub-badge">Featured</span>' : ''} ${sourceTag}</p>`
+    : (item.year || sourceTag ? `<p class="pub-venue">${item.year || ''} ${sourceTag}</p>` : '');
 
   return `
     <div class="pub-card">
@@ -329,11 +433,7 @@ function renderPubCard(item) {
       <div class="pub-body">
         <h3 class="pub-title">${esc(item.title || '')}</h3>
         ${item.authors ? `<p class="pub-authors">${md(item.authors)}</p>` : ''}
-        ${item.venue ? `<p class="pub-venue">
-          <em>${esc(item.venue)}</em>${item.year ? ' ' + item.year : ''}
-          ${item.featured ? '<span class="pub-badge">Featured</span>' : ''}
-          ${sourceTag}
-        </p>` : (item.year ? `<p class="pub-venue">${item.year} ${sourceTag}</p>` : (sourceTag ? `<p class="pub-venue">${sourceTag}</p>` : ''))}
+        ${venueHtml}
         ${item.body    ? `<p class="pub-abstract">${md(item.body)}</p>` : ''}
         ${links        ? `<div class="pub-links">${links}</div>` : ''}
       </div>
@@ -345,38 +445,39 @@ async function loadPublications() {
   const el = document.getElementById('publications-list');
   if (!el) return;
 
-  el.innerHTML = '<div class="data-loading">Loading publications…</div>';
+  // Wait for profile to be cached so we have orcid + arxiv_author_query
+  if (!_profile) {
+    try { _profile = await getJson('_data/profile.json'); } catch { /* continue without */ }
+  }
 
-  // Fetch manual entries and ORCID works in parallel
-  const [manualItems, orcidItems] = await Promise.all([
+  const orcid       = _profile?.orcid;
+  const arxivQuery  = _profile?.arxiv_author_query;
+
+  const [manualItems, orcidItems, arxivItems] = await Promise.all([
     loadCollection('_publications').catch(() => []),
-    (async () => {
-      // Wait for profile to be available (may already be cached)
-      if (!_profileData) {
-        try { _profileData = await getJson('_data/profile.json'); } catch { return []; }
-      }
-      if (!_profileData?.orcid) return [];
-      try {
-        return await fetchOrcidWorks(_profileData.orcid);
-      } catch (e) {
-        console.warn('loader: ORCID fetch failed:', e.message);
-        return [];
-      }
-    })(),
+    orcid      ? fetchOrcidWorks(orcid).catch(e => { console.warn('loader: ORCID failed:', e.message); return []; }) : Promise.resolve([]),
+    arxivQuery ? fetchArxivWorks(arxivQuery).catch(e => { console.warn('loader: arXiv failed:', e.message); return []; }) : Promise.resolve([]),
   ]);
 
-  // Manual entries win — filter ORCID items that share a DOI with a manual entry
-  const manualDois = new Set(manualItems.map(i => i.doi).filter(Boolean));
-  const uniqueOrcid = orcidItems.filter(i => !i.doi || !manualDois.has(i.doi));
+  // Manual entries take highest priority — deduplicate by DOI / arXiv ID
+  const manualDois    = new Set(manualItems.map(i => i.doi).filter(Boolean));
+  const manualArxivIds = new Set(manualItems.map(i => i._arxivId).filter(Boolean));
+  const orcidDois     = new Set(orcidItems.map(i => i.doi).filter(Boolean));
 
-  const items = [...manualItems, ...uniqueOrcid];
+  const uniqueOrcid = orcidItems.filter(i => !i.doi || !manualDois.has(i.doi));
+  const uniqueArxiv = arxivItems.filter(i => {
+    if (i._arxivId && manualArxivIds.has(i._arxivId)) return false;
+    if (i.doi && (manualDois.has(i.doi) || orcidDois.has(i.doi))) return false;
+    return true;
+  });
+
+  const items = [...manualItems, ...uniqueOrcid, ...uniqueArxiv];
 
   if (!items.length) {
     el.innerHTML = '<p class="muted">No publications yet — check back soon.</p>';
     return;
   }
 
-  // Featured first, then by year descending
   items.sort((a, b) => {
     if (a.featured && !b.featured) return -1;
     if (!a.featured && b.featured) return  1;
@@ -389,12 +490,16 @@ async function loadPublications() {
 // ── Boot ───────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (location.protocol === 'file:') {
-    console.warn('loader: running from file:// — serve via HTTP for data loading to work.');
-  }
-  // Profile must run first so _profileData is cached before loadPublications needs it
+  if (location.protocol === 'file:')
+    console.warn('loader: file:// detected — serve via HTTP for data loading to work.');
+
+  // Profile first (caches _profile for publications)
   loadProfile().then(() => loadPublications());
+
+  // Independent loaders run in parallel
   loadEducationAwards();
+  loadTeaching();
   loadNews();
   loadResearch();
+  loadTalks();
 });

@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Franz Machado — Physics PhD Student at Illinois Institute of Technology">
+    <meta name="description" content="Franz Machado — Physics PhD student at Illinois Institute of Technology working on neutrino physics and nuclear nonproliferation.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="profile">
+    <meta property="og:title"       content="Franz Machado — Physics PhD Student">
+    <meta property="og:description" content="Physics PhD student at IIT working on neutrino physics and nuclear nonproliferation.">
+    <meta property="og:url"         content="https://danylomachado1.github.io/">
+    <meta property="og:image"       content="https://danylomachado1.github.io/profile_photo.png">
+    <meta property="og:locale"      content="en_US">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card"        content="summary">
+    <meta name="twitter:title"       content="Franz Machado — Physics PhD Student">
+    <meta name="twitter:description" content="Physics PhD student at IIT working on neutrino physics and nuclear nonproliferation.">
+    <meta name="twitter:image"       content="https://danylomachado1.github.io/profile_photo.png">
+
+    <!-- JSON-LD structured data — loader.js will replace this with full data from profile.json -->
+    <script type="application/ld+json" id="json-ld-person">
+    {"@context":"https://schema.org","@type":"Person","name":"Franz Machado","url":"https://danylomachado1.github.io/","affiliation":{"@type":"Organization","name":"Illinois Institute of Technology"}}
+    </script>
+
     <title>Franz Machado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,10 +40,14 @@
     <header id="site-header">
         <div class="header-inner">
             <a href="#" class="site-title">Franz Machado</a>
-            <nav>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav id="site-nav">
                 <ul>
                     <li><a href="#profile" class="active">Home</a></li>
                     <li><a href="#research">Research</a></li>
+                    <li><a href="#talks-section">Talks</a></li>
                     <li><a href="#publications">Publications</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
@@ -31,12 +58,17 @@
     <main>
 
         <!-- ── Profile card ───────────────────────────── -->
-        <!-- Content populated from _data/profile.json by loader.js -->
+        <!-- Populated from _data/profile.json by loader.js -->
         <div class="card" id="profile">
             <div class="profile-body">
                 <div class="profile-text" id="profile-text">
-                    <!-- loader.js fills this -->
-                    <div class="data-loading">Loading profile…</div>
+                    <!-- Skeleton placeholder -->
+                    <div class="sk" style="width:55%;height:2.4rem;margin-bottom:.5rem"></div>
+                    <div class="sk" style="width:42%;height:1rem;margin-bottom:.3rem"></div>
+                    <div class="sk" style="width:52%;height:1rem;margin-bottom:1rem"></div>
+                    <div class="sk" style="width:96%;height:.85rem"></div>
+                    <div class="sk" style="width:88%;height:.85rem"></div>
+                    <div class="sk" style="width:92%;height:.85rem"></div>
                 </div>
                 <div class="profile-photo-wrap">
                     <img id="profile-photo" src="profile_photo.png" alt="Franz Machado">
@@ -45,28 +77,35 @@
         </div>
 
         <!-- ── Education + Awards card ────────────────── -->
-        <!-- Content populated from _data/education.json + _data/awards.json -->
+        <!-- Populated from _data/education.json + _data/awards.json -->
         <div class="card two-col-card">
             <div class="two-col-left">
                 <h2><i class="fa-solid fa-graduation-cap"></i> Education</h2>
                 <div id="education-list">
-                    <div class="data-loading">Loading…</div>
+                    <div class="sk" style="width:75%;height:.95rem"></div>
+                    <div class="sk" style="width:60%;height:.85rem"></div>
                 </div>
             </div>
-
             <div class="col-divider"></div>
-
             <div class="two-col-right">
                 <h2><i class="fa-solid fa-award"></i> Honors &amp; Awards</h2>
                 <ul class="awards-list" id="awards-list">
-                    <li class="data-loading">Loading…</li>
+                    <li class="sk" style="height:.85rem"></li>
+                    <li class="sk" style="height:.85rem"></li>
                 </ul>
             </div>
         </div>
 
+        <!-- ── Teaching / Experience card ─────────────── -->
+        <!-- Populated from _data/teaching.json — hidden until data loads -->
+        <div class="card" id="teaching-section" hidden>
+            <h2 class="section-heading"><i class="fa-solid fa-chalkboard-user"></i> Teaching &amp; Experience</h2>
+            <div id="teaching-list"></div>
+        </div>
+
         <!-- ── News card ──────────────────────────────── -->
         <!-- Populated from _news/*.md — hidden when empty -->
-        <!-- To add news: create a .md file in _news/ and add it to _news/index.json -->
+        <!-- To add: create .md in _news/ and add to _news/index.json -->
         <div class="card" id="news-section" hidden>
             <h2 class="section-heading"><i class="fa-solid fa-rss"></i> News</h2>
             <div id="news-list"></div>
@@ -74,12 +113,21 @@
 
         <!-- ── Research card ──────────────────────────── -->
         <!-- Populated from _research/*.md via _research/index.json -->
-        <!-- To add: create a .md file in _research/ and add its name to _research/index.json -->
         <div class="card" id="research">
             <h2 class="section-heading"><i class="fa-solid fa-flask"></i> Research Experience</h2>
             <div id="research-list">
-                <div class="data-loading">Loading…</div>
+                <div class="sk" style="width:80%;height:.9rem"></div>
+                <div class="sk" style="width:65%;height:.85rem"></div>
+                <div class="sk" style="width:72%;height:.85rem"></div>
             </div>
+        </div>
+
+        <!-- ── Talks card ─────────────────────────────── -->
+        <!-- Populated from _talks/*.md via _talks/index.json — hidden until data loads -->
+        <!-- To add: create .md in _talks/ and add to _talks/index.json -->
+        <div class="card" id="talks-section" hidden>
+            <h2 class="section-heading"><i class="fa-solid fa-microphone-lines"></i> Talks &amp; Presentations</h2>
+            <div id="talks-list"></div>
         </div>
 
         <!-- ── Skills card ────────────────────────────── -->
@@ -129,12 +177,14 @@
         </div>
 
         <!-- ── Publications card ──────────────────────── -->
-        <!-- Populated from _publications/*.md via _publications/index.json -->
-        <!-- To add: see _publications/README.md for instructions -->
+        <!-- Auto-fetched from ORCID + arXiv; manual entries via _publications/*.md -->
+        <!-- See _publications/README.md for instructions on adding manual entries -->
         <div class="card" id="publications">
             <h2 class="section-heading"><i class="fa-solid fa-star"></i> Publications</h2>
             <div id="publications-list">
-                <div class="data-loading">Loading…</div>
+                <div class="sk" style="width:85%;height:.9rem"></div>
+                <div class="sk" style="width:60%;height:.85rem"></div>
+                <div class="sk" style="width:70%;height:.85rem"></div>
             </div>
         </div>
 
@@ -167,6 +217,19 @@
     <footer>
         <p>&copy; 2024 Franz Machado</p>
     </footer>
+
+    <!--
+      GoatCounter analytics — privacy-friendly, no cookies, GDPR-compliant.
+      To enable:
+        1. Create a free account at https://www.goatcounter.com/
+        2. Add your site domain (danylomachado1.github.io)
+        3. Replace YOURCODE with your GoatCounter site code
+        4. Uncomment the script tag below
+    -->
+    <!--
+    <script data-goatcounter="https://YOURCODE.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+    -->
 
     <script src="js/main.js"></script>
     <script src="js/loader.js"></script>
