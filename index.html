@@ -3,138 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Franz Machado's Personal Webpage">
-    <title>Franz Machado - Personal Webpage</title>
+    <meta name="description" content="Franz Machado — Physics PhD Student at Illinois Institute of Technology">
+    <title>Franz Machado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <h1>Franz Machado</h1>
-        <nav>
-            <ul>
-                <li><a href="#about">About</a></li>
-                <li><a href="#education">Education</a></li>
-                <li><a href="#research">Research</a></li>
-                <li><a href="#awards">Awards</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#publications">Publications</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
+
+    <header id="site-header">
+        <div class="header-inner">
+            <div class="logo">FM</div>
+            <nav>
+                <ul>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#education">Education</a></li>
+                    <li><a href="#research">Research</a></li>
+                    <li><a href="#awards">Awards</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#publications">Publications</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
+    <section id="hero">
+        <div class="hero-content">
+            <p class="hero-eyebrow">Hello, I'm</p>
+            <h1>Franz Machado</h1>
+            <p class="hero-subtitle">Physics PhD Student &middot; Illinois Institute of Technology</p>
+            <p class="hero-description">Exploring neutrino physics, particle detectors, and data acquisition systems at the intersection of experimental and computational physics.</p>
+            <div class="hero-actions">
+                <a href="resume.pdf" class="btn btn-primary">Download Resume</a>
+                <a href="#research" class="btn btn-outline">View Research</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-ring ring-1"></div>
+            <div class="hero-ring ring-2"></div>
+            <div class="hero-ring ring-3"></div>
+            <div class="hero-photo-wrapper">
+                <img src="images/your-photo.jpg" alt="Franz Machado" class="hero-photo">
+            </div>
+        </div>
+    </section>
+
     <main>
-        <section id="about">
+
+        <section id="about" class="reveal">
+            <div class="section-label">About</div>
             <h2>About Me</h2>
-            <div class="tab-content">
-                <img src="images/your-photo.jpg" alt="Photo of Franz Machado" class="profile-photo">
-                <p>Welcome to my personal webpage! Here you can learn more about my academic background, research, and professional achievements.</p>
-                <a href="resume.pdf" class="button">Download My Resume</a>
-            </div>
+            <p>I'm a Physics PhD student at <strong>Illinois Institute of Technology</strong>, where I work on neutrino physics and nuclear nonproliferation. My research uses neutrino signals to monitor nuclear activity, combining experimental physics with computational modeling.</p>
+            <p>Previously, I've worked at <strong>CERN</strong> as part of the LHCb Computational Group, conducted research at the <strong>University of Alberta</strong> on dark matter detection, and contributed to cosmic-ray detector calibration in Peru.</p>
+            <p>I'm passionate about bridging fundamental physics with real-world applications in science and technology policy.</p>
         </section>
 
-        <section id="education">
+        <section id="education" class="reveal">
+            <div class="section-label">Education</div>
             <h2>Education</h2>
-            <div class="tab-content">
-                <ul>
-                    <li><strong>Physics PhD Student</strong> (August 2022 - Present)<br>
-                        Illinois Institute of Technology, Illinois, USA<br>
-                        GPA: 4.0
-                    </li>
-                    <li><strong>Bachelor of Science in Physics</strong> (March 2016 - August 2021)<br>
-                        Department of Science, Universidad Nacional de Ingeniería, Peru<br>
-                        GPA: 4.0 (Class rank: 1)
-                    </li>
-                </ul>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-card">
+                        <div class="timeline-meta">Aug 2022 — Present</div>
+                        <h3>Physics PhD Student</h3>
+                        <p class="institution">Illinois Institute of Technology &mdash; Illinois, USA</p>
+                        <span class="badge">GPA: 4.0</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-card">
+                        <div class="timeline-meta">Mar 2016 — Aug 2021</div>
+                        <h3>Bachelor of Science in Physics</h3>
+                        <p class="institution">Universidad Nacional de Ingeniería &mdash; Peru</p>
+                        <span class="badge">GPA: 4.0</span>
+                        <span class="badge badge-accent">Class Rank: 1st</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="research">
+        <section id="research" class="reveal">
+            <div class="section-label">Research</div>
             <h2>Research Experience</h2>
-            <div class="tab-content">
-                <article>
+            <div class="research-grid">
+                <article class="research-card">
+                    <div class="research-card-header">
+                        <span class="research-tag">Neutrino Physics</span>
+                        <span class="research-period">Jul – Dec 2023</span>
+                    </div>
                     <h3>MAD(ish) Test Site Transparency Study</h3>
-                    <p><em>Advisor: Dr. Bryce Littlejohn</em> (July 2023 - December 2023)<br>
-                        Department of Physics, Illinois Institute of Technology</p>
-                    <p>This study aims to determine experiment parameters for using neutrinos to set limits on fission-derived yield in large explosions. By analyzing factors like distance, yield, and detector size, and using the PROSPECT-CNP toolkit, we predict flux and identify optimal combinations for different scenarios.</p>
-                    <img src="images/madish-study.jpg" alt="Visualization related to MAD(ish) study" class="research-photo">
+                    <p class="research-advisor">Advisor: Dr. Bryce Littlejohn &mdash; IIT, Illinois</p>
+                    <p>Determined experiment parameters for using neutrinos to set limits on fission-derived yield in large explosions. Predicted flux and identified optimal detector configurations using the PROSPECT-CNP toolkit.</p>
+                    <img src="images/madish-study.jpg" alt="MAD(ish) study visualization" class="research-img">
                 </article>
-                <article>
-                    <h3>Data Transfer between LHCb Data Acquisition System and FPGA Accelerators</h3>
-                    <p><em>Advisor: Dr. Riccardo Fantechi</em> (June 2021 - September 2021)<br>
-                        LHCb Computational Group, CERN, Switzerland</p>
-                    <p>Reviewed the data acquisition system used by the LHCb experiment, performing tests on data transfer between PCIe40, EB, and the RETINA buffer. Developed efficient methods for merging data streams, leveraging characteristics of previous firmware runs.</p>
-                    <img src="images/lhcb-data-transfer.jpg" alt="LHCb data transfer visualization" class="research-photo">
+                <article class="research-card">
+                    <div class="research-card-header">
+                        <span class="research-tag">Data Acquisition</span>
+                        <span class="research-period">Jun – Sep 2021</span>
+                    </div>
+                    <h3>Data Transfer: LHCb DAQ &amp; FPGA Accelerators</h3>
+                    <p class="research-advisor">Advisor: Dr. Riccardo Fantechi &mdash; CERN, Switzerland</p>
+                    <p>Reviewed the LHCb data acquisition system and tested data transfer between PCIe40, EB, and the RETINA buffer. Developed efficient methods for merging data streams using firmware characteristics.</p>
+                    <img src="images/lhcb-data-transfer.jpg" alt="LHCb data transfer" class="research-img">
                 </article>
-                <article>
-                    <h3>Water Cherenkov Detector Calibration by Detected Muon Signals</h3>
-                    <p><em>Advisor: Dr. Cesar Castromonte, Luis Otiniano</em> (October 2020 - March 2021)<br>
-                        Department of Science, Universidad Nacional de Ingeniería, Peru</p>
-                    <p>Analyzed experimental data for vertical muons collected in Buenos Aires. Proposed a simulation for PMT response based on these analyses and simulations using CORSIKA and GEANT4.</p>
-                    <img src="images/chernkov-detector.jpg" alt="Cherenkov detector calibration" class="research-photo">
+                <article class="research-card">
+                    <div class="research-card-header">
+                        <span class="research-tag">Detector Calibration</span>
+                        <span class="research-period">Oct 2020 – Mar 2021</span>
+                    </div>
+                    <h3>Water Cherenkov Detector Calibration</h3>
+                    <p class="research-advisor">Advisors: Dr. Cesar Castromonte, Luis Otiniano &mdash; UNI, Peru</p>
+                    <p>Analyzed experimental data for vertical muons collected in Buenos Aires. Proposed a simulation for PMT response using CORSIKA and GEANT4.</p>
+                    <img src="images/chernkov-detector.jpg" alt="Cherenkov detector" class="research-img">
                 </article>
-                <article>
+                <article class="research-card">
+                    <div class="research-card-header">
+                        <span class="research-tag">Dark Matter</span>
+                        <span class="research-period">Jan – Mar 2020</span>
+                    </div>
                     <h3>A View through the PICO 40L Cameras</h3>
-                    <p><em>Advisor: Dr. Carsten Krauss, Scott Fallows</em> (January 2020 - March 2020)<br>
-                        Department of Science, University of Alberta, Canada</p>
-                    <p>Studied camera behavior in the detector to improve trigger efficiency, monitor stability, and identify phenomena for future analysis.</p>
-                    <img src="images/pico40l-camera.jpg" alt="PICO 40L detector visualization" class="research-photo">
+                    <p class="research-advisor">Advisors: Dr. Carsten Krauss, Scott Fallows &mdash; U of Alberta, Canada</p>
+                    <p>Studied camera behavior in the PICO 40L dark matter detector to improve trigger efficiency, monitor stability, and identify phenomena for future analysis.</p>
+                    <img src="images/pico40l-camera.jpg" alt="PICO 40L detector" class="research-img">
                 </article>
             </div>
         </section>
 
-        <section id="awards">
-            <h2>Awards & Achievements</h2>
-            <div class="tab-content">
-                <ul>
-                    <li><strong>CERN Summer Student Program</strong> (June 2021)<br>
-                        Grant (1500 CHF) to conduct research under the supervision of a CERN member.
-                    </li>
-                    <li><strong>First Place at the Spring 2020 Student Project Fair</strong> (September 2020)<br>
-                        Awarded by the Faculty of Sciences, National Engineering University.
-                    </li>
-                    <li><strong>University of Alberta Research Experience (UARE)</strong> (October 2019)<br>
-                        Grant (6000 CAD) to conduct research under the supervision of faculty members.
-                    </li>
-                </ul>
+        <section id="awards" class="reveal">
+            <div class="section-label">Awards</div>
+            <h2>Awards &amp; Achievements</h2>
+            <div class="awards-grid">
+                <div class="award-card">
+                    <div class="award-icon">&#127941;</div>
+                    <div>
+                        <h3>CERN Summer Student Program</h3>
+                        <p class="award-meta">June 2021 &mdash; Grant: 1,500 CHF</p>
+                        <p>Competitive grant to conduct research under the supervision of a CERN member.</p>
+                    </div>
+                </div>
+                <div class="award-card">
+                    <div class="award-icon">&#127942;</div>
+                    <div>
+                        <h3>1st Place — Spring 2020 Student Project Fair</h3>
+                        <p class="award-meta">September 2020 &mdash; Faculty of Sciences, UNI</p>
+                        <p>Top award among undergraduate research projects at the national level.</p>
+                    </div>
+                </div>
+                <div class="award-card">
+                    <div class="award-icon">&#127891;</div>
+                    <div>
+                        <h3>University of Alberta Research Experience (UARE)</h3>
+                        <p class="award-meta">October 2019 &mdash; Grant: 6,000 CAD</p>
+                        <p>Competitive grant to conduct research under faculty supervision at U of Alberta.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="skills">
+        <section id="skills" class="reveal">
+            <div class="section-label">Skills</div>
             <h2>Skills</h2>
-            <div class="tab-content">
-                <ul>
-                    <li><strong>Programming Languages:</strong> C++, Python, ROOT, SQL</li>
-                    <li><strong>Simulation Tools:</strong> CORSIKA, GEANT4</li>
-                    <li><strong>Data Analysis:</strong> PROSPECT-CNP Toolkit, Signal Processing</li>
-                    <li><strong>Languages:</strong> Fluent in Spanish and English</li>
-                </ul>
+            <div class="skills-grid">
+                <div class="skill-group">
+                    <h3>Programming</h3>
+                    <div class="tag-list">
+                        <span class="tag">C++</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">ROOT</span>
+                        <span class="tag">SQL</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <h3>Simulation</h3>
+                    <div class="tag-list">
+                        <span class="tag">CORSIKA</span>
+                        <span class="tag">GEANT4</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <h3>Data Analysis</h3>
+                    <div class="tag-list">
+                        <span class="tag">PROSPECT-CNP Toolkit</span>
+                        <span class="tag">Signal Processing</span>
+                    </div>
+                </div>
+                <div class="skill-group">
+                    <h3>Languages</h3>
+                    <div class="tag-list">
+                        <span class="tag">Spanish (Native)</span>
+                        <span class="tag">English (Fluent)</span>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section id="publications">
+        <section id="publications" class="reveal">
+            <div class="section-label">Publications</div>
             <h2>Publications</h2>
-            <div class="tab-content">
-                <p><em>No publications listed yet. Check back later!</em></p>
+            <p class="muted">No publications listed yet &mdash; check back soon.</p>
+        </section>
+
+        <section id="contact" class="reveal">
+            <div class="section-label">Contact</div>
+            <h2>Get in Touch</h2>
+            <p>Feel free to reach out about research collaborations, academic opportunities, or just to connect.</p>
+            <div class="contact-grid">
+                <a href="mailto:fmachado@hawk.iit.edu" class="contact-card">
+                    <span class="contact-icon">&#9993;</span>
+                    <div>
+                        <strong>Email</strong>
+                        <span>fmachado@hawk.iit.edu</span>
+                    </div>
+                </a>
+                <a href="https://linkedin.com/in/franz-danylo-machado-perez-40248614a" target="_blank" rel="noopener" class="contact-card">
+                    <span class="contact-icon">&#128101;</span>
+                    <div>
+                        <strong>LinkedIn</strong>
+                        <span>franz-danylo-machado-perez</span>
+                    </div>
+                </a>
+                <a href="https://github.com/danylomachado1" target="_blank" rel="noopener" class="contact-card">
+                    <span class="contact-icon">&#128187;</span>
+                    <div>
+                        <strong>GitHub</strong>
+                        <span>danylomachado1</span>
+                    </div>
+                </a>
+                <a href="https://www.researchgate.net/profile/Franz-Danylo-Machado" target="_blank" rel="noopener" class="contact-card">
+                    <span class="contact-icon">&#128196;</span>
+                    <div>
+                        <strong>ResearchGate</strong>
+                        <span>Franz-Danylo-Machado</span>
+                    </div>
+                </a>
             </div>
         </section>
 
-        <section id="contact">
-            <h2>Contact</h2>
-            <div class="tab-content">
-                <p><strong>Phone:</strong> (+1) 872 315 9215</p>
-                <p><strong>Email:</strong> <a href="mailto:fmachado@hawk.iit.edu">fmachado@hawk.iit.edu</a></p>
-                <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/franz-danylo-machado-perez-40248614a">linkedin.com/in/franz-danylo-machado-perez</a></p>
-                <p><strong>ResearchGate:</strong> <a href="https://www.researchgate.net/profile/Franz-Danylo-Machado">researchgate.net/profile/Franz-Danylo-Machado</a></p>
-                <p><strong>GitHub:</strong> <a href="https://github.com/danylomachado1">github.com/danylomachado1</a></p>
-            </div>
-        </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 Franz Machado</p>
+        <p>&copy; 2024 Franz Machado &mdash; Built with curiosity.</p>
     </footer>
 
-    <script src="js/tabs.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
