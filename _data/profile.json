@@ -4,13 +4,13 @@
   "affiliation": "Illinois Institute of Technology",
   "affiliation_color": "#cc2200",
   "photo": "images/your-photo.jpg",
-  "resume": "resume.pdf",
+  "resume": "Franz_Machado_CV_2026.pdf",
   "bio": [
-    "I'm a physicist working at the intersection of <strong>neutrino physics</strong> and <strong>nuclear nonproliferation</strong>. My research uses neutrino signals to monitor nuclear activity, combining experimental detector physics with computational modeling via the PROSPECT-CNP toolkit.",
-    "Previously, I worked at <strong>CERN</strong> on the LHCb data acquisition system, conducted dark matter detector research at the <strong>University of Alberta</strong>, and contributed to cosmic-ray detector calibration at <strong>Universidad Nacional de Ingeniería</strong> in Peru."
+    "I'm a physicist working on <strong>neutrino physics</strong> and <strong>nuclear nonproliferation</strong> at Illinois Institute of Technology. My current research focuses on enhancing sub-GeV dark matter detection by implementing the PROSPECT-II antineutrino detector at the Spallation Neutron Source (SNS), and on developing calibration methods for the Mobile Antineutrino Demonstrator (MAD) project.",
+    "Previously, I worked at <strong>CERN</strong> on the LHCb data acquisition system, conducted dark matter detector research at the <strong>University of Alberta</strong>, and contributed to cosmic-ray detector calibration at <strong>Universidad Nacional de Ingeniería</strong> in Peru. I am also a member of <em>Los caminos de Feynman</em>, a scientific communication group that promotes the work of Latin-American physicists."
   ],
   "social": {
-    "email": "fmachado@hawk.iit.edu",
+    "email": "fmachado@hawk.illinoistech.edu",
     "linkedin": "https://linkedin.com/in/franz-danylo-machado-perez-40248614a",
     "github": "https://github.com/danylomachado1",
     "researchgate": "https://www.researchgate.net/profile/Franz-Danylo-Machado"
