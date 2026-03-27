@@ -30,8 +30,9 @@
   --sk-b:             #e0e0e0;
 }
 
+/* Dark theme variables — shared by system preference and manual toggle */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg-page:          #111;
     --bg-card:          #1a1a1a;
     --border-card:      #2a2a2a;
@@ -62,6 +63,37 @@
   }
 }
 
+/* Manual dark override (set by toggle button, saved to localStorage) */
+:root[data-theme="dark"] {
+  --bg-page:          #111;
+  --bg-card:          #1a1a1a;
+  --border-card:      #2a2a2a;
+  --border-divider:   #252525;
+  --border-subtle:    #202020;
+  --border-col:       #2a2a2a;
+  --text-h:           #e8e8e8;
+  --text-body:        #bbb;
+  --text-secondary:   #999;
+  --text-muted:       #777;
+  --text-faint:       #555;
+  --text-faintest:    #444;
+  --text-footer:      #444;
+  --link:             #4db8e8;
+  --link-hover:       #80d0f5;
+  --tag-bg:           #1e2530;
+  --tag-border:       #2d3a48;
+  --tag-color:        #8aabb8;
+  --shadow-card:      0 1px 4px rgba(0,0,0,.5);
+  --orcid-bg:         #0a2018;
+  --orcid-border:     #1a4a30;
+  --orcid-color:      #34d399;
+  --arxiv-bg:         #201408;
+  --arxiv-border:     #4a2e08;
+  --arxiv-color:      #fbbf24;
+  --sk-a:             #252525;
+  --sk-b:             #2e2e2e;
+}
+
 /* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -75,6 +107,11 @@ body {
   color: var(--text-body);
   background: var(--bg-page);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.card {
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
@@ -102,6 +139,19 @@ body {
   color: #fff; letter-spacing: .01em;
   white-space: nowrap;
 }
+
+/* Theme toggle button */
+.theme-toggle {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.65);
+  font-size: 0.95rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover { color: #fff; }
 
 /* Hamburger button */
 .nav-toggle {
@@ -301,9 +351,11 @@ main {
 .talk-type-poster       { background: #f0f0f0; color: #555; }
 
 @media (prefers-color-scheme: dark) {
-  .talk-type-presentation { background: #1a3050; color: #70b8e8; }
-  .talk-type-poster       { background: #252525; color: #888; }
+  html:not([data-theme="light"]) .talk-type-presentation { background: #1a3050; color: #70b8e8; }
+  html:not([data-theme="light"]) .talk-type-poster       { background: #252525; color: #888; }
 }
+html[data-theme="dark"] .talk-type-presentation { background: #1a3050; color: #70b8e8; }
+html[data-theme="dark"] .talk-type-poster       { background: #252525; color: #888; }
 
 /* ── Skills ──────────────────────────────────────────────────── */
 .skills-row { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; }
