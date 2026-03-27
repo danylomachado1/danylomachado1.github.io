@@ -31,63 +31,26 @@
     <main>
 
         <!-- ── Profile card ───────────────────────────── -->
+        <!-- Content populated from _data/profile.json by loader.js -->
         <div class="card" id="profile">
             <div class="profile-body">
-                <div class="profile-text">
-                    <h1>Franz Machado</h1>
-                    <p class="profile-title">Physics PhD Student</p>
-                    <p class="profile-affil">
-                        <span class="affil-dot" style="background:#cc2200;"></span>
-                        Illinois Institute of Technology
-                    </p>
-
-                    <p>I'm a physicist working at the intersection of <strong>neutrino physics</strong> and <strong>nuclear nonproliferation</strong>. My research uses neutrino signals to monitor nuclear activity, combining experimental detector physics with computational modeling via the PROSPECT-CNP toolkit.</p>
-                    <p>Previously, I worked at <strong>CERN</strong> on the LHCb data acquisition system, conducted dark matter detector research at the <strong>University of Alberta</strong>, and contributed to cosmic-ray detector calibration at <strong>Universidad Nacional de Ingeniería</strong> in Peru.</p>
-
-                    <div class="social-links">
-                        <a href="mailto:fmachado@hawk.iit.edu">
-                            <i class="fa fa-envelope"></i> fmachado@hawk.iit.edu
-                        </a>
-                        <a href="https://linkedin.com/in/franz-danylo-machado-perez-40248614a" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-linkedin"></i> LinkedIn
-                        </a>
-                        <a href="https://github.com/danylomachado1" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-github"></i> GitHub
-                        </a>
-                        <a href="https://www.researchgate.net/profile/Franz-Danylo-Machado" target="_blank" rel="noopener">
-                            <i class="fa-brands fa-researchgate"></i> ResearchGate
-                        </a>
-                    </div>
+                <div class="profile-text" id="profile-text">
+                    <!-- loader.js fills this -->
+                    <div class="data-loading">Loading profile…</div>
                 </div>
                 <div class="profile-photo-wrap">
-                    <img src="images/your-photo.jpg" alt="Franz Machado">
+                    <img id="profile-photo" src="images/your-photo.jpg" alt="Franz Machado">
                 </div>
             </div>
         </div>
 
         <!-- ── Education + Awards card ────────────────── -->
+        <!-- Content populated from _data/education.json + _data/awards.json -->
         <div class="card two-col-card">
             <div class="two-col-left">
                 <h2><i class="fa-solid fa-graduation-cap"></i> Education</h2>
-
-                <div class="edu-item">
-                    <div class="edu-logo" style="background:#cc2200;">IIT</div>
-                    <div class="edu-details">
-                        <strong>Illinois Institute of Technology</strong>
-                        <span>Department of Physics</span>
-                        <span>Ph.D. Student</span>
-                    </div>
-                    <div class="edu-date">Aug. 2022 – present</div>
-                </div>
-
-                <div class="edu-item">
-                    <div class="edu-logo" style="background:#005fa3;">UNI</div>
-                    <div class="edu-details">
-                        <strong>Universidad Nacional de Ingeniería</strong>
-                        <span>Department of Science, Peru</span>
-                        <span>B.S. in Physics &mdash; GPA 4.0, Rank 1st</span>
-                    </div>
-                    <div class="edu-date">Mar. 2016 – Aug. 2021</div>
+                <div id="education-list">
+                    <div class="data-loading">Loading…</div>
                 </div>
             </div>
 
@@ -95,79 +58,31 @@
 
             <div class="two-col-right">
                 <h2><i class="fa-solid fa-award"></i> Honors &amp; Awards</h2>
-                <ul class="awards-list">
-                    <li>
-                        <span class="award-name">CERN Summer Student Program (1,500 CHF)</span>
-                        <span class="award-year">2021</span>
-                    </li>
-                    <li>
-                        <span class="award-name">1st Place — Spring Student Project Fair, UNI</span>
-                        <span class="award-year">2020</span>
-                    </li>
-                    <li>
-                        <span class="award-name">U of Alberta Research Experience Grant (6,000 CAD)</span>
-                        <span class="award-year">2019</span>
-                    </li>
+                <ul class="awards-list" id="awards-list">
+                    <li class="data-loading">Loading…</li>
                 </ul>
             </div>
         </div>
 
-        <!-- ── Research ────────────────────────────────── -->
+        <!-- ── News card ──────────────────────────────── -->
+        <!-- Populated from _news/*.md — hidden when empty -->
+        <!-- To add news: create a .md file in _news/ and add it to _news/index.json -->
+        <div class="card" id="news-section" hidden>
+            <h2 class="section-heading"><i class="fa-solid fa-rss"></i> News</h2>
+            <div id="news-list"></div>
+        </div>
+
+        <!-- ── Research card ──────────────────────────── -->
+        <!-- Populated from _research/*.md via _research/index.json -->
+        <!-- To add: create a .md file in _research/ and add its name to _research/index.json -->
         <div class="card" id="research">
             <h2 class="section-heading"><i class="fa-solid fa-flask"></i> Research Experience</h2>
-
-            <div class="news-group">
-                <div class="news-year">2023</div>
-                <div class="news-items">
-                    <div class="news-item">
-                        <div class="news-content">
-                            <strong>MAD(ish) Test Site Transparency Study</strong> —
-                            Determined experiment parameters for using neutrinos to monitor nuclear yields using the PROSPECT-CNP toolkit.
-                            <span class="news-meta">Advisor: Dr. Bryce Littlejohn &middot; IIT, Illinois</span>
-                        </div>
-                        <div class="news-date">Jul – Dec 2023</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="news-group">
-                <div class="news-year">2021</div>
-                <div class="news-items">
-                    <div class="news-item">
-                        <div class="news-content">
-                            <strong>Data Transfer: LHCb DAQ &amp; FPGA Accelerators</strong> —
-                            Tested data transfer between PCIe40, EB, and RETINA buffer at CERN. Developed efficient stream-merging methods using firmware characteristics.
-                            <span class="news-meta">Advisor: Dr. Riccardo Fantechi &middot; CERN, Switzerland</span>
-                        </div>
-                        <div class="news-date">Jun – Sep 2021</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="news-group">
-                <div class="news-year">2020</div>
-                <div class="news-items">
-                    <div class="news-item">
-                        <div class="news-content">
-                            <strong>Water Cherenkov Detector Calibration</strong> —
-                            Analyzed vertical muon data from Buenos Aires. Proposed PMT response simulations using CORSIKA and GEANT4.
-                            <span class="news-meta">Advisors: Dr. Cesar Castromonte, Luis Otiniano &middot; UNI, Peru</span>
-                        </div>
-                        <div class="news-date">Oct 2020 – Mar 2021</div>
-                    </div>
-                    <div class="news-item">
-                        <div class="news-content">
-                            <strong>A View through the PICO 40L Cameras</strong> —
-                            Studied dark matter detector camera behavior to improve trigger efficiency and monitor stability.
-                            <span class="news-meta">Advisors: Dr. Carsten Krauss, Scott Fallows &middot; U of Alberta, Canada</span>
-                        </div>
-                        <div class="news-date">Jan – Mar 2020</div>
-                    </div>
-                </div>
+            <div id="research-list">
+                <div class="data-loading">Loading…</div>
             </div>
         </div>
 
-        <!-- ── Skills ──────────────────────────────────── -->
+        <!-- ── Skills card ────────────────────────────── -->
         <div class="card" id="skills">
             <h2 class="section-heading"><i class="fa-solid fa-code"></i> Skills</h2>
             <div class="skills-row">
@@ -204,13 +119,17 @@
             </div>
         </div>
 
-        <!-- ── Publications ────────────────────────────── -->
+        <!-- ── Publications card ──────────────────────── -->
+        <!-- Populated from _publications/*.md via _publications/index.json -->
+        <!-- To add: see _publications/README.md for instructions -->
         <div class="card" id="publications">
             <h2 class="section-heading"><i class="fa-solid fa-star"></i> Publications</h2>
-            <p class="muted">No publications yet &mdash; check back soon.</p>
+            <div id="publications-list">
+                <div class="data-loading">Loading…</div>
+            </div>
         </div>
 
-        <!-- ── Contact ─────────────────────────────────── -->
+        <!-- ── Contact card ────────────────────────────── -->
         <div class="card" id="contact">
             <h2 class="section-heading"><i class="fa-solid fa-envelope"></i> Contact</h2>
             <p>Reach out about research collaborations, academic opportunities, or to connect.</p>
@@ -241,5 +160,6 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/loader.js"></script>
 </body>
 </html>

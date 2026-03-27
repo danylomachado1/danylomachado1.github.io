@@ -1,0 +1,22 @@
+[
+  {
+    "institution": "Illinois Institute of Technology",
+    "department": "Department of Physics",
+    "degree": "Ph.D. Student",
+    "location": "Illinois, USA",
+    "start": "Aug. 2022",
+    "end": "present",
+    "color": "#cc2200",
+    "abbr": "IIT"
+  },
+  {
+    "institution": "Universidad Nacional de Ingeniería",
+    "department": "Department of Science, Peru",
+    "degree": "B.S. in Physics — GPA 4.0, Rank 1st",
+    "location": "Peru",
+    "start": "Mar. 2016",
+    "end": "Aug. 2021",
+    "color": "#005fa3",
+    "abbr": "UNI"
+  }
+]
