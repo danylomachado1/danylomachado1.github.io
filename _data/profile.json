@@ -3,7 +3,7 @@
   "title": "Physics PhD Student",
   "affiliation": "Illinois Institute of Technology",
   "affiliation_color": "#cc2200",
-  "photo": "images/your-photo.jpg",
+  "photo": "profile_photo.png",
   "resume": "Franz_Machado_CV_2026.pdf",
   "bio": [
     "I'm a physicist working on <strong>neutrino physics</strong> and <strong>nuclear nonproliferation</strong> at Illinois Institute of Technology. My current research focuses on enhancing sub-GeV dark matter detection by implementing the PROSPECT-II antineutrino detector at the Spallation Neutron Source (SNS), and on developing calibration methods for the Mobile Antineutrino Demonstrator (MAD) project.",
