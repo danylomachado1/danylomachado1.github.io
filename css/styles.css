@@ -460,6 +460,19 @@ main {
 
 .pub-links a:hover { text-decoration: underline; }
 
+.pub-source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    background: #f0faf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+}
+
 .pub-badge {
     display: inline-block;
     font-size: 0.7rem;

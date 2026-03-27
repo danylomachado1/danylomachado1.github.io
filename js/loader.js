@@ -2,16 +2,16 @@
  * loader.js — Data-driven page renderer
  *
  * Reads from:
- *   _data/profile.json       → profile card
+ *   _data/profile.json       → profile card (also reads orcid field for social link)
  *   _data/education.json     → education list
  *   _data/awards.json        → honors & awards list
  *   _research/index.json     → list of _research/*.md files
  *   _news/index.json         → list of _news/*.md files
- *   _publications/index.json → list of _publications/*.md files
+ *   _publications/index.json → list of _publications/*.md files (manual)
+ *   ORCID public API         → publications fetched automatically from orcid field
  *
- * To add new research/news/publications:
- *   1. Create a .md file in the appropriate folder
- *   2. Add its filename to that folder's index.json
+ * Publications = ORCID works (auto) + _publications/*.md (manual, takes priority).
+ * Manual entries override ORCID ones with the same DOI.
  */
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -54,7 +54,6 @@ function parseMd(text) {
     const raw = kv[2].trim();
 
     if (raw === '') {
-      // Block list
       const items = [];
       i++;
       while (i < lines.length && /^\s*-\s/.test(lines[i])) {
@@ -65,7 +64,6 @@ function parseMd(text) {
       continue;
     }
 
-    // Inline list [a, b]
     if (raw[0] === '[' && raw[raw.length - 1] === ']') {
       fm[key] = raw.slice(1, -1).split(',').map(s => scalar(s.trim())).filter(v => v != null);
       i++; continue;
@@ -88,8 +86,8 @@ function scalar(v) {
   return v;
 }
 
-async function getJson(path) {
-  const r = await fetch(path);
+async function getJson(path, options) {
+  const r = await fetch(path, options);
   if (!r.ok) throw new Error(`${path} → ${r.status}`);
   return r.json();
 }
@@ -100,7 +98,6 @@ async function getText(path) {
   return r.text();
 }
 
-// Load all .md files listed in folder/index.json
 async function loadCollection(folder) {
   const files = await getJson(`${folder}/index.json`);
   const items = [];
@@ -118,18 +115,21 @@ async function loadCollection(folder) {
 
 // ── Profile ────────────────────────────────────────────────────
 
+// Cache the profile data so publications can reuse it without a second fetch
+let _profileData = null;
+
 async function loadProfile() {
-  let data;
-  try { data = await getJson('_data/profile.json'); }
+  try { _profileData = await getJson('_data/profile.json'); }
   catch (e) { console.warn('loader: profile.json not loaded:', e.message); return; }
 
-  const textEl = document.getElementById('profile-text');
+  const data = _profileData;
+  const textEl  = document.getElementById('profile-text');
   const photoEl = document.getElementById('profile-photo');
 
   if (textEl) {
-    const bioHtml = (data.bio || []).map(p => `<p>${p}</p>`).join('');
-    const socialHtml = buildSocial(data.social || {}, data.resume);
-    const dotStyle = `background:${esc(data.affiliation_color || '#555')};`;
+    const bioHtml    = (data.bio || []).map(p => `<p>${p}</p>`).join('');
+    const socialHtml = buildSocial(data.social || {}, data.orcid, data.resume);
+    const dotStyle   = `background:${esc(data.affiliation_color || '#555')};`;
 
     textEl.innerHTML = `
       <h1>${esc(data.name)}</h1>
@@ -149,15 +149,16 @@ async function loadProfile() {
   }
 }
 
-function buildSocial(s, resume) {
+function buildSocial(s, orcid, resume) {
   const links = [];
-  if (s.email)       links.push(`<a href="mailto:${esc(s.email)}"><i class="fa fa-envelope"></i> ${esc(s.email)}</a>`);
-  if (s.linkedin)    links.push(`<a href="${esc(s.linkedin)}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>`);
-  if (s.github)      links.push(`<a href="${esc(s.github)}" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>`);
+  if (s.email)        links.push(`<a href="mailto:${esc(s.email)}"><i class="fa fa-envelope"></i> ${esc(s.email)}</a>`);
+  if (s.linkedin)     links.push(`<a href="${esc(s.linkedin)}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>`);
+  if (s.github)       links.push(`<a href="${esc(s.github)}" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>`);
   if (s.researchgate) links.push(`<a href="${esc(s.researchgate)}" target="_blank" rel="noopener"><i class="fa-brands fa-researchgate"></i> ResearchGate</a>`);
-  if (s.scholar)     links.push(`<a href="${esc(s.scholar)}" target="_blank" rel="noopener"><i class="fa-brands fa-google-scholar"></i> Google Scholar</a>`);
-  if (s.twitter)     links.push(`<a href="${esc(s.twitter)}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> Twitter / X</a>`);
-  if (resume)        links.push(`<a href="${esc(resume)}"><i class="fa fa-file-pdf"></i> Resume</a>`);
+  if (s.scholar)      links.push(`<a href="${esc(s.scholar)}" target="_blank" rel="noopener"><i class="fa-brands fa-google-scholar"></i> Google Scholar</a>`);
+  if (orcid)          links.push(`<a href="https://orcid.org/${esc(orcid)}" target="_blank" rel="noopener"><i class="fa-brands fa-orcid"></i> ORCID</a>`);
+  if (s.twitter)      links.push(`<a href="${esc(s.twitter)}" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> Twitter / X</a>`);
+  if (resume)         links.push(`<a href="${esc(resume)}"><i class="fa fa-file-pdf"></i> Resume</a>`);
   return links.join('\n');
 }
 
@@ -202,14 +203,13 @@ async function loadResearch() {
 
   let items;
   try { items = await loadCollection('_research'); }
-  catch (e) { console.warn('loader: research collection error:', e.message); return; }
+  catch (e) { console.warn('loader: research error:', e.message); return; }
 
   if (!items.length) {
     el.innerHTML = '<p class="muted">No research items yet.</p>';
     return;
   }
 
-  // Group by year descending
   const byYear = {};
   for (const item of items) {
     const y = String(item.year || 'Other');
@@ -243,18 +243,14 @@ async function loadResearch() {
 
 async function loadNews() {
   const section = document.getElementById('news-section');
-  const el = document.getElementById('news-list');
+  const el      = document.getElementById('news-list');
   if (!el) return;
 
   let items;
   try { items = await loadCollection('_news'); }
   catch { if (section) section.hidden = true; return; }
 
-  if (!items.length) {
-    if (section) section.hidden = true;
-    return;
-  }
-
+  if (!items.length) { if (section) section.hidden = true; return; }
   if (section) section.hidden = false;
 
   const byYear = {};
@@ -279,15 +275,101 @@ async function loadNews() {
   `).join('');
 }
 
-// ── Publications ───────────────────────────────────────────────
+// ── Publications: ORCID fetch ──────────────────────────────────
+
+async function fetchOrcidWorks(orcid) {
+  const url = `https://pub.orcid.org/v3.0/${orcid}/works`;
+  const data = await getJson(url, { headers: { Accept: 'application/json' } });
+  const groups = data.group || [];
+
+  return groups.map(group => {
+    // ORCID can have multiple versions of the same work; take the first summary
+    const s = group['work-summary']?.[0];
+    if (!s) return null;
+
+    const title  = s.title?.title?.value || '';
+    const year   = Number(s['publication-date']?.year?.value) || null;
+    const venue  = s['journal-title']?.value || '';
+    const type   = s.type || '';
+
+    // Extract DOI from external IDs
+    const extIds = s['external-ids']?.['external-id'] || [];
+    const doi    = extIds.find(e => e['external-id-type'] === 'doi')?.['external-id-value'] || '';
+    const url_   = s.url?.value || '';
+
+    return {
+      title,
+      year,
+      venue,
+      type,
+      doi,
+      pdf: doi ? `https://doi.org/${doi}` : (url_ || ''),
+      _source: 'orcid',
+    };
+  }).filter(Boolean);
+}
+
+// ── Publications: render ───────────────────────────────────────
+
+function renderPubCard(item) {
+  const links = [
+    item.pdf    && `<a href="${esc(item.pdf)}"    target="_blank" rel="noopener">[PDF]</a>`,
+    item.code   && `<a href="${esc(item.code)}"   target="_blank" rel="noopener">[Code]</a>`,
+    item.slides && `<a href="${esc(item.slides)}" target="_blank" rel="noopener">[Slides]</a>`,
+    item.doi    && `<a href="https://doi.org/${esc(item.doi)}" target="_blank" rel="noopener">[DOI]</a>`,
+  ].filter(Boolean).join(' ');
+
+  const sourceTag = item._source === 'orcid'
+    ? `<span class="pub-source-tag"><i class="fa-brands fa-orcid"></i> ORCID</span>`
+    : '';
+
+  return `
+    <div class="pub-card">
+      ${item.image ? `<img src="${esc(item.image)}" alt="${esc(item.title)}" class="pub-thumb">` : ''}
+      <div class="pub-body">
+        <h3 class="pub-title">${esc(item.title || '')}</h3>
+        ${item.authors ? `<p class="pub-authors">${md(item.authors)}</p>` : ''}
+        ${item.venue ? `<p class="pub-venue">
+          <em>${esc(item.venue)}</em>${item.year ? ' ' + item.year : ''}
+          ${item.featured ? '<span class="pub-badge">Featured</span>' : ''}
+          ${sourceTag}
+        </p>` : (item.year ? `<p class="pub-venue">${item.year} ${sourceTag}</p>` : (sourceTag ? `<p class="pub-venue">${sourceTag}</p>` : ''))}
+        ${item.body    ? `<p class="pub-abstract">${md(item.body)}</p>` : ''}
+        ${links        ? `<div class="pub-links">${links}</div>` : ''}
+      </div>
+    </div>
+  `;
+}
 
 async function loadPublications() {
   const el = document.getElementById('publications-list');
   if (!el) return;
 
-  let items;
-  try { items = await loadCollection('_publications'); }
-  catch (e) { console.warn('loader: publications error:', e.message); return; }
+  el.innerHTML = '<div class="data-loading">Loading publications…</div>';
+
+  // Fetch manual entries and ORCID works in parallel
+  const [manualItems, orcidItems] = await Promise.all([
+    loadCollection('_publications').catch(() => []),
+    (async () => {
+      // Wait for profile to be available (may already be cached)
+      if (!_profileData) {
+        try { _profileData = await getJson('_data/profile.json'); } catch { return []; }
+      }
+      if (!_profileData?.orcid) return [];
+      try {
+        return await fetchOrcidWorks(_profileData.orcid);
+      } catch (e) {
+        console.warn('loader: ORCID fetch failed:', e.message);
+        return [];
+      }
+    })(),
+  ]);
+
+  // Manual entries win — filter ORCID items that share a DOI with a manual entry
+  const manualDois = new Set(manualItems.map(i => i.doi).filter(Boolean));
+  const uniqueOrcid = orcidItems.filter(i => !i.doi || !manualDois.has(i.doi));
+
+  const items = [...manualItems, ...uniqueOrcid];
 
   if (!items.length) {
     el.innerHTML = '<p class="muted">No publications yet — check back soon.</p>';
@@ -301,30 +383,7 @@ async function loadPublications() {
     return (b.year || 0) - (a.year || 0);
   });
 
-  el.innerHTML = items.map(item => {
-    const linkButtons = [
-      item.pdf    && `<a href="${esc(item.pdf)}"    target="_blank" rel="noopener">[PDF]</a>`,
-      item.code   && `<a href="${esc(item.code)}"   target="_blank" rel="noopener">[Code]</a>`,
-      item.slides && `<a href="${esc(item.slides)}" target="_blank" rel="noopener">[Slides]</a>`,
-      item.doi    && `<a href="https://doi.org/${esc(item.doi)}" target="_blank" rel="noopener">[DOI]</a>`,
-    ].filter(Boolean).join(' ');
-
-    return `
-      <div class="pub-card">
-        ${item.image ? `<img src="${esc(item.image)}" alt="${esc(item.title)}" class="pub-thumb">` : ''}
-        <div class="pub-body">
-          <h3 class="pub-title">${esc(item.title || '')}</h3>
-          ${item.authors ? `<p class="pub-authors">${md(item.authors)}</p>` : ''}
-          ${item.venue   ? `<p class="pub-venue">
-            <em>${esc(item.venue)}</em>${item.year ? ' ' + item.year : ''}
-            ${item.featured ? '<span class="pub-badge">Featured</span>' : ''}
-          </p>` : ''}
-          ${item.body    ? `<p class="pub-abstract">${md(item.body)}</p>` : ''}
-          ${linkButtons  ? `<div class="pub-links">${linkButtons}</div>` : ''}
-        </div>
-      </div>
-    `;
-  }).join('');
+  el.innerHTML = items.map(renderPubCard).join('');
 }
 
 // ── Boot ───────────────────────────────────────────────────────
@@ -333,9 +392,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (location.protocol === 'file:') {
     console.warn('loader: running from file:// — serve via HTTP for data loading to work.');
   }
-  loadProfile();
+  // Profile must run first so _profileData is cached before loadPublications needs it
+  loadProfile().then(() => loadPublications());
   loadEducationAwards();
   loadNews();
   loadResearch();
-  loadPublications();
 });
